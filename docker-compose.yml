@@ -1,0 +1,37 @@
+version: '3.9'
+
+x-php-config:
+  &php-config
+  env_file:
+    - .env
+  build:
+    context: .
+    args:
+      user: www
+      uid: 80
+  restart: unless-stopped
+
+services:
+  telegram-updates:
+    <<: *php-config
+    command: sh -c "while true; do echo 'telegram-updates'; sleep 16; done"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  ton-dns-updates:
+    <<: *php-config
+    command: sh -c "while true; do ./index.php load-new-bets; sleep 1; done"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_RANDOM_ROOT_PASSWORD: 'true'
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "${MYSQL_HOST}" ]

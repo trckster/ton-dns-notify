@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Commands\GetTelegramUpdates;
+use App\Commands\LoadNewBets;
 use App\Interfaces\CommandInterface;
 use Dotenv\Dotenv;
 
@@ -10,7 +11,7 @@ class Kernel
 {
     const COMMANDS = [
         'get-telegram-updates' => GetTelegramUpdates::class,
-        'load-new-bets' => stdClass::class
+        'load-new-bets' => LoadNewBets::class
     ];
 
     public function __construct(

@@ -7,6 +7,7 @@ class Log
     public static function info(string $message): void
     {
         // TODO: implement
+        echo $message . "\n";
     }
 
     public static function error(string $message): void
