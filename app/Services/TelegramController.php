@@ -14,10 +14,20 @@ class TelegramController
         'ping' => Ping::class,
     ];
 
+    public function __construct(
+        private bool $debug = false
+    )
+    {
+    }
+
     public function process(Update $update): void
     {
         if ($update->getUpdateType() !== Update::TYPE_MESSAGE) {
             return;
+        }
+
+        if ($this->debug) {
+            $this->logMessage($update);
         }
 
         $action = $update->getMessage()->getCommand();
@@ -29,7 +39,7 @@ class TelegramController
         }
     }
 
-    public function getAction(Update $update, string $actionName): AbstractAction
+    private function getAction(Update $update, string $actionName): AbstractAction
     {
         $actionClass = self::AVAILABLE_ACTIONS[$actionName] ?? DefaultAction::class;
 
@@ -42,5 +52,20 @@ class TelegramController
             'chat_id' => $update->getMessage()->getChat()->getId(),
             'text' => $answer,
         ]);
+    }
+
+    public function enableDebug(): void
+    {
+        $this->debug = true;
+    }
+
+    private function logMessage(Update $update): void
+    {
+        $message = $update->getMessage();
+
+        $chatId = $message->getChat();
+        $message = $message->getText();
+
+        Log::info("[MESSAGE] $chatId: $message");
     }
 }

@@ -2,7 +2,8 @@
     "require": {
         "php": "^8.1",
         "longman/telegram-bot": "^0.78.0",
-        "vlucas/phpdotenv": "^5.4"
+        "vlucas/phpdotenv": "^5.4",
+        "doctrine/migrations": "^3.5"
     },
     "autoload": {
         "files": [

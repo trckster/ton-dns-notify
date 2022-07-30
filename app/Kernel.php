@@ -4,6 +4,7 @@ namespace App;
 
 use App\Commands\GetTelegramUpdates;
 use App\Commands\LoadNewBets;
+use App\Commands\RunMigrations;
 use App\Interfaces\CommandInterface;
 use Dotenv\Dotenv;
 
@@ -11,7 +12,8 @@ class Kernel
 {
     const COMMANDS = [
         'get-telegram-updates' => GetTelegramUpdates::class,
-        'load-new-bets' => LoadNewBets::class
+        'load-new-bets' => LoadNewBets::class,
+        'migrate' => RunMigrations::class
     ];
 
     public function __construct(
@@ -42,7 +44,7 @@ class Kernel
 
     public function loadEnv(): void
     {
-        $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
+        $dotenv = Dotenv::createImmutable(getBaseDir());
         $dotenv->load();
     }
 }

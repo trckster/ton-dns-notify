@@ -16,18 +16,13 @@ class GetTelegramUpdates implements CommandInterface
     public function __construct()
     {
         $this->telegram = new Telegram(env('BOT_API_KEY'), env('BOT_HANDLE'));
-        $this->telegram->enableMySql([
-            'host' => env('MYSQL_HOST'),
-            'port' => env('MYSQL_PORT'),
-            'user' => env('MYSQL_USER'),
-            'password' => env('MYSQL_PASSWORD'),
-            'database' => env('MYSQL_DATABASE'),
-        ]);
+        $this->telegram->enableMySql(getDatabaseEnv());
     }
 
     public function handle(): void
     {
         $controller = new TelegramController;
+        $controller->enableDebug();
 
         try {
             $response = $this->telegram->handleGetUpdates();
