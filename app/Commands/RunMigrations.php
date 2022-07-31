@@ -22,11 +22,7 @@ class RunMigrations implements CommandInterface
         $directoryContent = scandir(getBaseDir('migrations'));
         $files = array_diff($directoryContent, ['.', '..']);
 
-        $connection = DriverManager::getConnection(
-            getDatabaseEnv() + [
-                'driver' => 'pdo_mysql',
-                'dbname' => env('MYSQL_DATABASE')
-            ]);
+        $connection = DriverManager::getConnection(getDatabaseEnv(true));
 
         foreach ($files as $file) {
             Log::info("Migrating $file...");
