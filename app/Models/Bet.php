@@ -16,18 +16,6 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 #[Table(name: 'bets')]
 class Bet
 {
-    public function __construct(Auction $auction, TransactionDTO $transaction)
-    {
-        $this->auctionId = $auction->getId();
-        $this->transactionLt = $transaction->transactionLt;
-        $this->transactionHash = $transaction->transactionHash;
-        $this->source = $transaction->inputMessage->source;
-        $this->destination = $transaction->inputMessage->destination;
-        $this->price = $transaction->inputMessage->value / 1_000_000_000;
-        $this->madeAt = Carbon::createFromTimestamp($transaction->time)->toDateTime();
-        $this->createdAt = new DateTime;
-    }
-
     #[Id, Column(type: Types::INTEGER), GeneratedValue]
     private int $id;
 
@@ -54,6 +42,18 @@ class Bet
 
     #[Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private DateTime $createdAt;
+
+    public function __construct(Auction $auction, TransactionDTO $transaction)
+    {
+        $this->auctionId = $auction->getId();
+        $this->transactionLt = $transaction->transactionLt;
+        $this->transactionHash = $transaction->transactionHash;
+        $this->source = $transaction->inputMessage->source;
+        $this->destination = $transaction->inputMessage->destination;
+        $this->price = $transaction->inputMessage->value / 1_000_000_000;
+        $this->madeAt = Carbon::createFromTimestamp($transaction->time)->toDateTime();
+        $this->createdAt = new DateTime;
+    }
 
     public function getId(): int
     {

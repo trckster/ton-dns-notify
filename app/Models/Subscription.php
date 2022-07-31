@@ -6,40 +6,30 @@ use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
-use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\GeneratedValue;
 
 #[Entity]
-#[Table(name: 'auctions')]
-class Auction
+#[Table(name: 'subscriptions')]
+class Subscription
 {
     #[Id, Column(type: Types::INTEGER), GeneratedValue]
     private int $id;
 
+    #[Column(name: 'chat_id', type: Types::INTEGER)]
+    private int $chatId;
+
     #[Column(type: Types::STRING, length: 126)]
     private string $dns;
-
-    #[Column(type: Types::STRING, length: 60)]
-    private string $address;
 
     #[Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private DateTime $createdAt;
 
-    public function __construct(string $dns, string $address)
+    public function __construct(int $chatId, string $domain)
     {
-        $this->dns = $dns;
-        $this->address = $address;
+        $this->chatId = $chatId;
+        $this->dns = $domain;
         $this->createdAt = new DateTime;
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getAddress(): string
-    {
-        return $this->address;
     }
 }

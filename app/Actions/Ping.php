@@ -2,15 +2,10 @@
 
 namespace App\Actions;
 
-use Longman\TelegramBot\Request;
-
 class Ping extends AbstractAction
 {
-    public function process(): void
+    public function process(): string
     {
-        Request::sendMessage([
-            'chat_id' => $this->update->getMessage()->getChat()->getId(),
-            'text' => 'PONG'
-        ]);
+        return 'PONG';
     }
 }

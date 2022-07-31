@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Actions\AbstractAction;
 use App\Actions\DefaultAction;
 use App\Actions\Ping;
+use App\Actions\Subscribe;
 use Longman\TelegramBot\Entities\Update;
 use Longman\TelegramBot\Request;
 
@@ -12,6 +13,7 @@ class TelegramController
 {
     const AVAILABLE_ACTIONS = [
         'ping' => Ping::class,
+        'watch' => Subscribe::class,
     ];
 
     public function __construct(
@@ -33,10 +35,12 @@ class TelegramController
         $action = $update->getMessage()->getCommand();
 
         if (is_null($action)) {
-            $this->answer($update, 'Under development (here will be help)');
+            $answer = 'Under development (here will be help)';
         } else {
-            $this->getAction($update, $action)->process();
+            $answer = $this->getAction($update, $action)->process();
         }
+
+        $this->answer($update, $answer);
     }
 
     private function getAction(Update $update, string $actionName): AbstractAction

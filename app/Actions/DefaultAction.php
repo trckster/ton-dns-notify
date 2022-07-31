@@ -2,15 +2,10 @@
 
 namespace App\Actions;
 
-use Longman\TelegramBot\Request;
-
 class DefaultAction extends AbstractAction
 {
-    public function process(): void
+    public function process(): string
     {
-        Request::sendMessage([
-            'chat_id' => $this->update->getMessage()->getChat()->getId(),
-            'text' => 'Command ' . $this->update->getMessage()->getText() . ' not found!'
-        ]);
+        return 'Command ' . $this->update->getMessage()->getText() . ' not found!';
     }
 }

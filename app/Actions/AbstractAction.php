@@ -10,5 +10,5 @@ abstract class AbstractAction
     {
     }
 
-    abstract public function process(): void;
+    abstract public function process(): string;
 }

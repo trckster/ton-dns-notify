@@ -27,9 +27,18 @@ services:
       migrations:
         condition: service_completed_successfully
 
-  ton-dns-updates:
+  ton-dns-load-new-bets:
     <<: *php-config
     command: sh -c "while true; do ./index.php load-new-bets; sleep 1; done"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+
+  ton-dns-load-auctions:
+    <<: *php-config
+    command: sh -c "while true; do ./index.php load-auctions; sleep 1; done"
     depends_on:
       mysql:
         condition: service_healthy

@@ -17,7 +17,7 @@ class LoadNewBets implements CommandInterface
     private EntityManager $em;
 
     const TON_DNS_ROOT_ADDRESS = 'EQC3dNlesgVD8YbAazcauIrXBPfiVhMMr5YYk2in0Mtsz0Bz';
-    const TRANSACTIONS_COUNT = 1000;
+    const TRANSACTIONS_COUNT = 100;
 
     public function __construct()
     {
