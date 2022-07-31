@@ -37,4 +37,9 @@ class Auction
     {
         return $this->id;
     }
+
+    public function getAddress(): string
+    {
+        return $this->address;
+    }
 }

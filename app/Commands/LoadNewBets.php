@@ -16,7 +16,7 @@ class LoadNewBets implements CommandInterface
     private EntityManager $em;
 
     const TON_DNS_ROOT_ADDRESS = 'EQC3dNlesgVD8YbAazcauIrXBPfiVhMMr5YYk2in0Mtsz0Bz';
-    const TRANSACTIONS_COUNT = 100;
+    const TRANSACTIONS_COUNT = 1000;
 
     public function __construct()
     {
@@ -43,7 +43,7 @@ class LoadNewBets implements CommandInterface
                 $keepGoing = false;
             }
 
-            $transactions = $parser->getTransactionsDTOs($response['result']);
+            $transactions = $parser->getTransactionsDTOs($result);
 
             $keepGoing &= $this->processTransactions($transactions);
 

@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Commands\GetTelegramUpdates;
+use App\Commands\LoadAuctions;
 use App\Commands\LoadNewBets;
 use App\Commands\RunMigrations;
 use App\Interfaces\CommandInterface;
@@ -13,7 +14,8 @@ class Kernel
     const COMMANDS = [
         'get-telegram-updates' => GetTelegramUpdates::class,
         'load-new-bets' => LoadNewBets::class,
-        'migrate' => RunMigrations::class
+        'load-auctions' => LoadAuctions::class,
+        'migrate' => RunMigrations::class,
     ];
 
     public function __construct(
