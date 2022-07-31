@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\DTO\BetDTO;
 use App\Interfaces\CommandInterface;
+use App\Models\Auction;
 use App\Models\Bet;
 use App\Services\TonCenterAPI;
 
@@ -53,6 +54,7 @@ class LoadNewBets implements CommandInterface
     private function processTransactions(array $transactions): bool
     {
         $existingCount = 0;
+        $auctions = [];
         $em = getEntityManager();
 
         foreach ($transactions as $transaction) {
@@ -74,13 +76,31 @@ class LoadNewBets implements CommandInterface
             if (!is_null($model)) {
                 $existingCount++;
             } else {
-                $em->persist(new Bet($betDTO));
+                $bet = new Bet($betDTO);
+                $em->persist($bet);
+
+                $auctions[] = [
+                    'bet' => $bet,
+                    'at' => $transaction['out_msgs'][0]['destination']
+                ];
             }
         }
 
         $em->flush();
 
-        return $existingCount < self::TRANSACTIONS_COUNT / 5;
+        foreach ($auctions as $auction)
+        {
+            /** @var Bet $firstBet */
+            $firstBet = $auction['bet'];
+
+            $auction = new Auction($firstBet->getId(), $auction['at']);
+
+            $em->persist($auction);
+        }
+
+        $em->flush();
+
+        return $existingCount < self::TRANSACTIONS_COUNT / 2;
     }
 
     private function isValid(array $transaction): bool
