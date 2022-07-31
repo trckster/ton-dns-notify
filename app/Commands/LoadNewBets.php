@@ -6,6 +6,7 @@ use App\DTO\TransactionDTO;
 use App\Interfaces\CommandInterface;
 use App\Models\Auction;
 use App\Models\Bet;
+use App\Services\Log;
 use App\Services\TonCenterAPI;
 use App\Services\TransactionsParser;
 use Doctrine\ORM\EntityManager;
@@ -29,6 +30,8 @@ class LoadNewBets implements CommandInterface
         $parser = new TransactionsParser;
         $startWith = [];
         $keepGoing = true;
+
+        Log::info('[LoadNewBots] Start initial bets update.');
 
         while ($keepGoing) {
             $response = $this->tonClient->getTransactions(
@@ -55,6 +58,8 @@ class LoadNewBets implements CommandInterface
                 'hash' => $latestTransaction->transactionHash,
             ];
         }
+
+        Log::info('[LoadNewBots] Finish initial bets update.');
     }
 
     private function processTransactions(array $transactions): bool

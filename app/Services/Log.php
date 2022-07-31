@@ -2,16 +2,25 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
+
 class Log
 {
     public static function info(string $message): void
     {
-        // TODO: implement
-        echo $message . "\n";
+        echo self::getPrefix() . $message . "\n";
     }
 
     public static function error(string $message): void
     {
-        // TODO: implement
+        error_log(self::getPrefix() . $message);
+    }
+
+    public static function getPrefix(): string
+    {
+        $pid = getmypid();
+        $time = Carbon::now()->toDateTimeString();
+
+        return "[$pid/$time] ";
     }
 }

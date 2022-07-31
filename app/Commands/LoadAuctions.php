@@ -6,6 +6,7 @@ use App\DTO\TransactionDTO;
 use App\Interfaces\CommandInterface;
 use App\Models\Auction;
 use App\Models\Bet;
+use App\Services\Log;
 use App\Services\TonCenterAPI;
 use App\Services\TransactionsParser;
 use Doctrine\ORM\EntityManager;
@@ -27,11 +28,14 @@ class LoadAuctions implements CommandInterface
     {
         $auctions = $this->em->getRepository(Auction::class)->findAll();
 
+        Log::info('[LoadAuctions] Start update over ' . count($auctions) . ' auctions.');
+
         /** @var Auction $auction */
         foreach ($auctions as $auction) {
             $this->updateAuction($auction);
-            echo $auction->getAddress() . "\n";
         }
+
+        Log::info('[LoadAuctions] Iteration over ' . count($auctions) . ' auctions has ended.');
     }
 
     private function updateAuction(Auction $auction): void
