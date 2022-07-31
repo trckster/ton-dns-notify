@@ -2,15 +2,18 @@
 
 namespace App\Commands;
 
-use App\DTO\BetDTO;
+use App\DTO\TransactionDTO;
 use App\Interfaces\CommandInterface;
 use App\Models\Auction;
 use App\Models\Bet;
 use App\Services\TonCenterAPI;
+use App\Services\TransactionsParser;
+use Doctrine\ORM\EntityManager;
 
 class LoadNewBets implements CommandInterface
 {
     private TonCenterAPI $tonClient;
+    private EntityManager $em;
 
     const TON_DNS_ROOT_ADDRESS = 'EQC3dNlesgVD8YbAazcauIrXBPfiVhMMr5YYk2in0Mtsz0Bz';
     const TRANSACTIONS_COUNT = 100;
@@ -18,10 +21,12 @@ class LoadNewBets implements CommandInterface
     public function __construct()
     {
         $this->tonClient = new TonCenterAPI;
+        $this->em = getEntityManager();
     }
 
     public function handle(): void
     {
+        $parser = new TransactionsParser;
         $startWith = [];
         $keepGoing = true;
 
@@ -38,85 +43,55 @@ class LoadNewBets implements CommandInterface
                 $keepGoing = false;
             }
 
-            $keepGoing &= $this->processTransactions($result);
+            $transactions = $parser->getTransactionsDTOs($response['result']);
 
-            $latestTransaction = $result[count($result) - 1];
+            $keepGoing &= $this->processTransactions($transactions);
+
+            /** @var TransactionDTO $latestTransaction */
+            $latestTransaction = $transactions[count($transactions) - 1];
 
             $startWith = [
-                'lt' => $latestTransaction['transaction_id']['lt'],
-                'hash' => $latestTransaction['transaction_id']['hash'],
+                'lt' => $latestTransaction->transactionLt,
+                'hash' => $latestTransaction->transactionHash,
             ];
-
-            var_dump($startWith['lt']);
         }
     }
 
     private function processTransactions(array $transactions): bool
     {
         $existingCount = 0;
-        $auctions = [];
-        $em = getEntityManager();
 
+        /** @var TransactionDTO $transaction */
         foreach ($transactions as $transaction) {
-            if (!$this->isValid($transaction)) {
+            if (!$transaction->isValid()) {
                 continue;
             }
 
-            $betDTO = BetDTO::fromTransaction($transaction);
+            $qb = $this->em->createQueryBuilder();
 
-            $qb = $em->createQueryBuilder();
-            $model = $qb->select('bets')
-                ->from(Bet::class, 'bets')
-                ->where('bets.transactionLt = ?0 AND bets.transactionHash = ?1')
-                ->setParameters([$betDTO->transactionLt, $betDTO->transactionHash])
+            $model = $qb->select('auctions')
+                ->from(Auction::class, 'auctions')
+                ->where('auctions.dns = ?0')
+                ->setParameters([$transaction->inputMessage->message])
                 ->setMaxResults(1)
                 ->getQuery()
                 ->getOneOrNullResult();
 
-            if (!is_null($model)) {
+            if ($model) {
                 $existingCount++;
-            } else {
-                $bet = new Bet($betDTO);
-                $em->persist($bet);
-
-                $auctions[] = [
-                    'bet' => $bet,
-                    'at' => $transaction['out_msgs'][0]['destination']
-                ];
+                continue;
             }
+
+            $auction = new Auction($transaction->inputMessage->message, $transaction->outputMessages[0]->destination);
+            $this->em->persist($auction);
+            $this->em->flush();
+
+            $bet = new Bet($auction, $transaction);
+            $this->em->persist($bet);
         }
 
-        $em->flush();
-
-        foreach ($auctions as $auction)
-        {
-            /** @var Bet $firstBet */
-            $firstBet = $auction['bet'];
-
-            $auction = new Auction($firstBet->getId(), $auction['at']);
-
-            $em->persist($auction);
-        }
-
-        $em->flush();
+        $this->em->flush();
 
         return $existingCount < self::TRANSACTIONS_COUNT / 2;
-    }
-
-    private function isValid(array $transaction): bool
-    {
-        if (empty(trim($transaction['in_msg']['message']))) {
-            return false;
-        }
-
-        if (empty($transaction['out_msgs'])) {
-            return false;
-        }
-
-        if ($transaction['in_msg']['source'] === $transaction['out_msgs'][0]['destination']) {
-            return false;
-        }
-
-        return true;
     }
 }

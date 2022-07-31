@@ -14,9 +14,9 @@ use Doctrine\ORM\Mapping\Table;
 #[Table(name: 'auctions')]
 class Auction
 {
-    public function __construct(int $betId, string $address)
+    public function __construct(string $dns, string $address)
     {
-        $this->lastBetId = $betId;
+        $this->dns = $dns;
         $this->address = $address;
         $this->createdAt = new DateTime;
     }
@@ -24,11 +24,11 @@ class Auction
     #[Id, Column(type: Types::INTEGER), GeneratedValue]
     private int $id;
 
+    #[Column(type: Types::STRING, length: 126)]
+    private string $dns;
+
     #[Column(type: Types::STRING, length: 60)]
     private string $address;
-
-    #[Column(name: 'last_bet_id', type: Types::INTEGER)]
-    private int $lastBetId;
 
     #[Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private DateTime $createdAt;

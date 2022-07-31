@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\DTO\BetDTO;
+use App\DTO\TransactionDTO;
+use Carbon\Carbon;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
@@ -15,19 +16,23 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 #[Table(name: 'bets')]
 class Bet
 {
-    public function __construct(BetDTO $dto)
+    public function __construct(Auction $auction, TransactionDTO $transaction)
     {
-        $this->transactionLt = $dto->transactionLt;
-        $this->transactionHash = $dto->transactionHash;
-        $this->dns = $dto->dns;
-        $this->address = $dto->address;
-        $this->price = $dto->price;
-        $this->madeAt = $dto->madeAt->toDateTime();
+        $this->auctionId = $auction->getId();
+        $this->transactionLt = $transaction->transactionLt;
+        $this->transactionHash = $transaction->transactionHash;
+        $this->source = $transaction->inputMessage->source;
+        $this->destination = $transaction->inputMessage->destination;
+        $this->price = $transaction->inputMessage->value / 1_000_000_000;
+        $this->madeAt = Carbon::createFromTimestamp($transaction->time)->toDateTime();
         $this->createdAt = new DateTime;
     }
 
     #[Id, Column(type: Types::INTEGER), GeneratedValue]
     private int $id;
+
+    #[Column(name: 'auction_id', type: Types::INTEGER)]
+    private int $auctionId;
 
     #[Column(name: 'transaction_lt', type: Types::STRING, length: 255)]
     private string $transactionLt;
@@ -35,11 +40,11 @@ class Bet
     #[Column(name: 'transaction_hash', type: Types::STRING, length: 255)]
     private string $transactionHash;
 
-    #[Column(type: Types::STRING, length: 126)]
-    private string $dns;
+    #[Column(type: Types::STRING, length: 60)]
+    private string $source;
 
     #[Column(type: Types::STRING, length: 60)]
-    private string $address;
+    private string $destination;
 
     #[Column(type: Types::DECIMAL)]
     private float $price;
